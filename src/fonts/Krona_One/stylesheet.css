@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'Krona One';
+    src: url('KronaOne-Regular.eot');
+    src: local('Krona One'), local('KronaOne-Regular'),
+        url('KronaOne-Regular.eot?#iefix') format('embedded-opentype'),
+        url('KronaOne-Regular.woff2') format('woff2'),
+        url('KronaOne-Regular.woff') format('woff'),
+        url('KronaOne-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
