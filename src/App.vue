@@ -1,7 +1,7 @@
 <template>
-  <AppHeader v-if="!isLoginPage && !isRegisterPage" />
+  <AppHeader v-if="!isLoginPage && !isRegisterPage && !isForgottenPasswordPage" />
   <router-view></router-view>
-  <AppFooter v-if="!isLoginPage && !isRegisterPage"/>
+  <AppFooter v-if="!isLoginPage && !isRegisterPage && !isForgottenPasswordPage"/>
 </template>
 
 <script setup>
@@ -18,14 +18,15 @@ useHead({
   meta: [
     { charset: 'utf-8' },
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    { name: 'description', content: 'Site about tea' },
+    { name: 'description', content: 'Site with films' },
   ],
-  title: 'Tasty Tea',
+  title: 'Filma',
 });
 
 const route = useRoute();
 const isLoginPage = computed(() => route.name === 'login');
 const isRegisterPage = computed(() => route.name === 'register');
+const isForgottenPasswordPage = computed(() => route.name === 'forgottenpassword');
 
 </script>
 

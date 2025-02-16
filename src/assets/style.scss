@@ -115,8 +115,10 @@ p {
   width: 1px;
 }
 
-address {
-  font-style: normal !important;
+.error-message {
+  color: var(--main-color);
+  font-size: 14px;
+  margin-top: 5px;
 }
 
 .gap-45 {
@@ -126,12 +128,3 @@ address {
 .f-wrap {
   flex-wrap: wrap;
 }
-
-
-/*@media (max-width: 767px) {
-  h1,
-  h2 {
-    font-size: 18px;
-    line-height: 26px;
-  }
-}*/

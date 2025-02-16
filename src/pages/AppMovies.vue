@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h2>Popular Movies</h2>
+    <h1>Popular Movies</h1>
 
     <div class="filters">
       <select v-model="selectedGenre" @change="applyFilters">
@@ -211,7 +211,7 @@ onMounted(() => {
 
 div {
   margin-bottom: 30px;
-  h2 {
+  h1 {
     text-align: center;
     font-size: 2rem;
     color: var(--white);

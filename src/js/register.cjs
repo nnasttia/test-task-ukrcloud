@@ -55,6 +55,55 @@ app.post("/register", (req, res) => {
     });
 });
 
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const usersFile = path.join(__dirname, "../json/users.json");
+
+    fs.readFile(usersFile, (err, data) => {
+        if (err) {
+            console.error("Error reading users file:", err);
+            return res.status(500).json({ error: "Error reading users file" });
+        }
+
+        let users = [];
+        try {
+            users = JSON.parse(data);
+        } catch (parseError) {
+            console.error("Error parsing JSON:", parseError);
+            return res.status(500).json({ error: "Error parsing users file" });
+        }
+
+        const user = users.find(user => user.email === email && user.password === password);
+        if (!user) {
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        const token = `token-${user.id}`;
+        return res.status(200).json({ message: "Login successful", token });
+    });
+});
+
+app.get("/users", (req, res) => {
+    const usersFile = path.join(__dirname, "../json/users.json");
+    fs.readFile(usersFile, (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: "Error reading users file" });
+        }
+
+        try {
+            const users = JSON.parse(data);
+            res.json(users);
+        } catch (parseError) {
+            res.status(500).json({ error: "Error parsing users file" });
+        }
+    });
+});
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });

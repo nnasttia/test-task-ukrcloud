@@ -3,33 +3,28 @@
     <div class="login-container d-flex">
       <div class="login-image d-flex">
         <router-link to="/">
-          <img src="../img/Main-Logo.png" alt="site main logo" loading="lazy">
+          <img src="../img/logo.png" alt="site main logo" loading="lazy">
         </router-link>
       </div>
       <div class="login-form">
         <h1>Sign In</h1>
-        <form @submit.prevent="handleLogin">
+        <Form
+            @submit="handleLogin"
+            :validation-schema="loginPageValidate"
+        >
           <div class="form-group">
-            <input
-                type="email"
-                v-model="email"
-                placeholder="Enter your email"
-                required
-            />
+            <Field name="email" type="email" v-model="email" placeholder="Enter your email" class="input" />
+            <ErrorMessage name="email" class="error-message"/>
           </div>
           <div class="form-group">
-            <input
-                type="password"
-                v-model="password"
-                placeholder="Enter your password"
-                required
-            />
+            <Field name="password" type="password" v-model="password" placeholder="Enter your password" class="input" />
+            <ErrorMessage name="password" class="error-message" />
           </div>
           <button type="submit" class="login-button btn">Sign in</button>
           <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-        </form>
+        </Form>
         <div class="extra-links">
-          <a href="#" @click.prevent="forgotPassword">Forgot Password?</a><br>
+          <router-link to="/forgottenpassword">Forgot Password?<br></router-link>
           <router-link to="/register">Don`t have account yet? Sign Up</router-link>
         </div>
       </div>
@@ -39,32 +34,36 @@
 
 <script setup>
 import { ref } from "vue";
-import users from "@/json/users.json";
+import axios from "axios";
 import router from "@/router/index.js";
+import {loginPageValidate} from "@/schema/validationSchema.js";
+import {Field, Form, ErrorMessage} from "vee-validate";
 
 const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 
-const handleLogin = () => {
-  const user = users.find(
-      (user) => user.email === email.value && user.password === password.value
-  );
+const handleLogin = async () => {
+  try {
 
-  if (user) {
-    errorMessage.value = "";
-    localStorage.setItem("currentUser", JSON.stringify(user));
+    const { data: users } = await axios.get("http://localhost:3000/users");
 
-    router.push("/");
-  } else {
-    errorMessage.value = "Wrong email or password.";
+    const user = users.find(
+        (user) => user.email === email.value && user.password === password.value
+    );
+
+    if (user) {
+      errorMessage.value = "";
+      localStorage.setItem("token", "true");
+
+      await router.push("/");
+    } else {
+      errorMessage.value = "Wrong email or password.";
+    }
+  } catch (error) {
+    errorMessage.value = "Server error. Please try again later.";
   }
 };
-
-const forgotPassword = () => {
-  alert("Forgot password functionality coming soon!");
-};
-
 </script>
 
 <style scoped lang="scss">

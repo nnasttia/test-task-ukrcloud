@@ -4,7 +4,7 @@
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="movie">
       <button @click="goBack" class="back-button">← Back</button>
-      <h2>{{ movie.title }}</h2>
+      <h1>{{ movie.title }}</h1>
       <img
           v-if="movie.poster_path"
           :src="`https://image.tmdb.org/t/p/w500${movie.poster_path}`"
@@ -84,7 +84,7 @@ p {
   line-height: 1.6;
 }
 
-h2 {
+h1 {
   color: var(--white);
   font-family: var(--second-font), serif;
   font-size: 24px;

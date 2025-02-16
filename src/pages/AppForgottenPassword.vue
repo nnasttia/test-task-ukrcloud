@@ -3,33 +3,24 @@
     <div class="login-container d-flex">
       <div class="login-image d-flex">
         <router-link to="/">
-          <img src="../img/logo.png" alt="site main logo" loading="lazy"/>
+          <img src="../img/logo.png" alt="site main logo" loading="lazy">
         </router-link>
       </div>
       <div class="login-form">
-        <h1>Sign Up</h1>
+        <h1>Forgotten Password</h1>
         <Form
-            @submit.prevent="handleLogin"
-            :validation-schema="signUpPageValidate"
+            :validation-schema="forgottenPasswordPageValidate"
         >
           <div class="form-group">
-            <Field name="firstName" type="text" v-model="firstName" placeholder="Enter first name" class="input" />
-            <ErrorMessage name="firstName" class="error-message"/>
-          </div>
-          <div class="form-group">
             <Field name="email" type="email" v-model="email" placeholder="Enter your email" class="input" />
-            <ErrorMessage name="email" class="error-message" />
+            <ErrorMessage name="email" class="error-message"/>
           </div>
-          <div class="form-group">
-            <Field name="password" type="password" v-model="password" placeholder="Enter your password" class="input" />
-            <ErrorMessage name="password" class="error-message" />
-          </div>
-          <button type="submit" class="login-button btn">Sign up</button>
+          <button type="submit" class="login-button btn">Send code</button>
           <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         </Form>
         <div class="extra-links">
-          <router-link to="/forgottenpassword">Forgot Password?<br></router-link>
-          <router-link to="/login">Already have an account? Sign in</router-link>
+          <router-link to="/login">Already have an account? Sign in <br></router-link>
+          <router-link to="/register">Don`t have account yet? Sign Up</router-link>
         </div>
       </div>
     </div>
@@ -37,43 +28,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import axios from "axios";
-import router from "@/router/index.js";
-import {ErrorMessage, Field, Form} from "vee-validate";
-import {loginPageValidate, signUpPageValidate} from "@/schema/validationSchema.js";
 
-const firstName = ref("");
+import {forgottenPasswordPageValidate} from "@/schema/validationSchema.js";
+import {
+  ErrorMessage,
+  Field,
+  Form
+} from "vee-validate";
+import {ref} from "vue";
 const email = ref("");
-const password = ref("");
+
 const errorMessage = ref("");
-
-const handleLogin = async () => {
-  try {
-    const response = await axios.post("http://localhost:3000/register", {
-      firstName: firstName.value,
-      email: email.value,
-      password: password.value,
-    });
-
-    alert(response.data.message);
-    if (response.data.redirectTo) {
-      await router.push(response.data.redirectTo);
-    } else {
-      await router.push('/login');
-    }
-  } catch (error) {
-    if (error.response) {
-      errorMessage.value = error.response.data.error || "Unknown error occurred";
-    } else {
-      errorMessage.value = "Something went wrong. Please try again later.";
-    }
-  }
-};
-
-const forgotPassword = () => {
-  alert("Forgot password functionality coming soon!");
-};
 </script>
 
 <style scoped lang="scss">
