@@ -19,3 +19,7 @@ export const signUpPageValidate = yup.object({
 export const forgottenPasswordPageValidate = yup.object({
     email: yup.string().email("Invalid email").required("Email is required"),
 })
+
+export const newsletterPageValidate = yup.object({
+    email: yup.string().email("Invalid email").required("Email is required"),
+})

@@ -1,82 +1,33 @@
 <template>
   <footer class="app-footer">
     <div class="container">
-      <div class="header-divider d-flex">
+      <div class="footer-divider d-flex">
         <span></span>
       </div>
       <div class="footer-inner-container d-flex">
         <article class="footer-info">
           <h2>Company</h2>
           <ul>
-            <li>
-              <a href="#">
-                Our Services
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Latest News
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Meet The Directors
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Latest Movies
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Album & Gallery
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Global Brands
-              </a>
+            <li v-for="(item, index) in companyLinks" :key="index">
+              <a href="#">{{ item }}</a>
             </li>
           </ul>
         </article>
         <article class="footer-info">
           <h2>Account</h2>
           <ul>
-            <li>
-              <a href="#">
-                My account
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Checkout
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Cart
-              </a>
-            </li>
-            <li>
-              <a href="#">
-                Sample page
-              </a>
+            <li v-for="(item, index) in accountLinks" :key="index">
+              <a href="#">{{ item }}</a>
             </li>
           </ul>
         </article>
         <div class="footer-info">
-
           <address class="footer-address">
             <div class="footer-number">
-              <a href="tel: +013 (456) 7899">
-                +013 (456) 7899
-              </a>
+              <a :href="`tel:${phoneNumber}`">{{ phoneNumber }}</a>
             </div>
             <div class="footer-email">
-              <a href="mailto:support@gmail.com">
-                support@gmail.com
-              </a>
+              <a :href="`mailto:${email}`">{{ email }}</a>
             </div>
           </address>
           <div>
@@ -86,22 +37,36 @@
               Closed Sunday
             </p>
             <p>
-              205 New South East Road
+              {{ address }}
             </p>
           </div>
         </div>
       </div>
     </div>
-
     <div class="copyright">
       <p>© 2021 ENVALAB. All Rights Reserved.</p>
     </div>
   </footer>
 </template>
 
-<script setup>
-
+<script>
+export default {
+  data() {
+    return {
+      companyLinks: [
+        "Our Services", "Latest News", "Meet The Directors", "Latest Movies", "Album & Gallery", "Global Brands"
+      ],
+      accountLinks: [
+        "My account", "Checkout", "Cart", "Sample page"
+      ],
+      phoneNumber: "+013 (456) 7899",
+      email: "support@gmail.com",
+      address: "205 New South East Road"
+    };
+  }
+};
 </script>
+
 
 <style scoped>
 .app-footer {
@@ -114,8 +79,7 @@
     padding: 0 20px;
   }
 
-  .header-divider {
-    display: flex;
+  .footer-divider {
     justify-content: center;
     margin-bottom: 40px;
 
@@ -128,7 +92,6 @@
   }
 
   .footer-inner-container {
-    display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
 

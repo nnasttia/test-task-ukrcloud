@@ -4,7 +4,7 @@
       <div class="header-row">
         <div class="header-logo">
           <router-link to="/">
-            <img src="../img/logo.png" alt="site main logo">
+            <img src="../img/logo.png" alt="site main logo" loading="lazy">
           </router-link>
         </div>
 
@@ -16,18 +16,9 @@
 
         <nav class="header-menu" :class="{ 'menu-open': isMenuOpen }">
           <ul>
-            <li><a href="#">Home</a></li>
-            <li><router-link to="">Our Movies</router-link></li>
-            <li><a href="#">Pages</a></li>
-            <li><router-link to="">Services</router-link></li>
-            <li><router-link to="">Contact Us</router-link></li>
-            <li class="header-cart-element">
-              <router-link v-if="!currentUser" to="/login">Login</router-link>
-              <div v-else>
-                <router-link to="/account">
-                  <span class="greetings">Account: {{ currentUser.name }}</span>
-                </router-link>
-              </div>
+            <li v-for="(item, index) in menuItems" :key="index">
+              <router-link v-if="item.route" :to="item.route">{{ item.label }}</router-link>
+              <button v-else class="logout-btn" @click="logout">{{ item.label }}</button>
             </li>
           </ul>
         </nav>
@@ -36,13 +27,47 @@
   </header>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script>
+import { ref, computed, watchEffect } from "vue";
+import { useRouter } from "vue-router";
 
-const isMenuOpen = ref(false);
+export default {
+  setup() {
+    const isMenuOpen = ref(false);
+    const router = useRouter();
 
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
+    const isAuthenticated = ref(localStorage.getItem("token") === "true");
+
+    watchEffect(() => {
+      isAuthenticated.value = localStorage.getItem("token") === "true";
+    });
+
+    const menuItems = computed(() => [
+      { label: "Home", route: "/" },
+      { label: "Our Movies", route: "#" },
+      { label: "Pages", route: "#" },
+      { label: "Services", route: "#" },
+      { label: "Contact Us", route: "#" },
+      isAuthenticated.value ? { label: "Logout", route: null } : null
+    ].filter(Boolean));
+
+    const logout = () => {
+      localStorage.removeItem("token");
+      isAuthenticated.value = false;
+      router.push("/login");
+    };
+
+    const toggleMenu = () => {
+      isMenuOpen.value = !isMenuOpen.value;
+    };
+
+    return {
+      isMenuOpen,
+      menuItems,
+      toggleMenu,
+      logout,
+    };
+  },
 };
 </script>
 
@@ -158,6 +183,20 @@ const toggleMenu = () => {
 
   body.menu-open {
     overflow: hidden;
+  }
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px 10px;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: var(--main-color);
   }
 }
 </style>

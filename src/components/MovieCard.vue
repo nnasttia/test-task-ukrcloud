@@ -1,5 +1,5 @@
 <template>
-  <div class="movie-card" @click="$emit('movie-selected', movie.id)">
+  <div @click="selectMovie">
     <img
         v-if="movie.poster_path"
         :src="`https://image.tmdb.org/t/p/w500${movie.poster_path}`"
@@ -11,13 +11,22 @@
   </div>
 </template>
 
-<script setup>
-defineProps(["movie"]);
+<script>
+export default {
+  props: {
+    movie: Object,
+  },
+  methods: {
+    selectMovie() {
+      this.$emit("movie-selected", this.movie.id);
+    },
+  },
+};
 </script>
 
 <style scoped>
 
-.movie-card {
+div {
   background-color: var(--white);
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -37,6 +46,7 @@ defineProps(["movie"]);
     height: auto;
     border-radius: 8px;
     margin-bottom: 15px;
+
   }
 
   h3 {

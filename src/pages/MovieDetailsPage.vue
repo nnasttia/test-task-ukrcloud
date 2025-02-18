@@ -18,40 +18,42 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+<script>
 import axios from "axios";
 import router from "@/router/index.js";
 
-const movie = ref(null);
-const loading = ref(true);
-const error = ref("");
-const route = useRoute();
-
-const fetchMovieDetails = async () => {
-  try {
-    const response = await axios.get(`https://api.themoviedb.org/3/movie/${route.params.id}`, {
-      params: {
-        api_key: "6259ebf1275fb543a9463547c1fffd76",
-        language: "en-US",
-      },
-    });
-    movie.value = response.data;
-  } catch (err) {
-    error.value = "Failed to load movie details";
-  } finally {
-    loading.value = false;
+export default {
+  data() {
+    return {
+      movie: null,
+      loading: true,
+      error: "",
+    };
+  },
+  methods: {
+    async fetchMovieDetails() {
+      try {
+        const response = await axios.get(`https://api.themoviedb.org/3/movie/${this.$route.params.id}`, {
+          params: {
+            api_key: "6259ebf1275fb543a9463547c1fffd76",
+            language: "en-US",
+          },
+        });
+        this.movie = response.data;
+      } catch (err) {
+        this.error = "Failed to load movie details";
+      } finally {
+        this.loading = false;
+      }
+    },
+    goBack() {
+      router.back();
+    }
+  },
+  mounted() {
+    this.fetchMovieDetails();
   }
 };
-
-const goBack = () => {
-  router.back();
-};
-
-onMounted(() => {
-  fetchMovieDetails();
-});
 </script>
 
 <style scoped>

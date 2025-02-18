@@ -1,33 +1,56 @@
 <template>
   <div class="login-page d-flex">
-    <div class="login-container d-flex">
-      <div class="login-image d-flex">
+    <div class="login d-flex">
+      <div class="image d-flex">
         <router-link to="/">
           <img src="../img/logo.png" alt="site main logo" loading="lazy"/>
         </router-link>
       </div>
-      <div class="login-form">
+      <div class="form">
         <h1>Sign Up</h1>
         <Form
-            @submit.prevent="handleLogin"
             :validation-schema="signUpPageValidate"
+            v-slot="{ handleSubmit }"
         >
-          <div class="form-group">
-            <Field name="firstName" type="text" v-model="firstName" placeholder="Enter first name" class="input" />
-            <ErrorMessage name="firstName" class="error-message"/>
+          <div class="mb-20">
+            <Field
+                name="firstName"
+                type="text"
+                v-model="firstName"
+                placeholder="Enter first name"
+                class="input"
+            />
+            <ErrorMessage name="firstName" class="error"/>
           </div>
-          <div class="form-group">
-            <Field name="email" type="email" v-model="email" placeholder="Enter your email" class="input" />
-            <ErrorMessage name="email" class="error-message" />
+          <div class="mb-20">
+            <Field
+                name="email"
+                type="email"
+                v-model="email"
+                placeholder="Enter your email"
+                class="input"
+            />
+            <ErrorMessage name="email" class="error" />
           </div>
-          <div class="form-group">
-            <Field name="password" type="password" v-model="password" placeholder="Enter your password" class="input" />
-            <ErrorMessage name="password" class="error-message" />
+          <div class="mb-20">
+            <Field
+                name="password"
+                type="password"
+                v-model="password"
+                placeholder="Enter your password"
+                class="input"
+            />
+            <ErrorMessage name="password" class="error" />
           </div>
-          <button type="submit" class="login-button btn">Sign up</button>
-          <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+          <button
+              type="submit"
+              class="login-button btn"
+              @click="handleSubmit($event, handleLogin)"
+          >
+            Sign up
+          </button>
         </Form>
-        <div class="extra-links">
+        <div class="links">
           <router-link to="/forgottenpassword">Forgot Password?<br></router-link>
           <router-link to="/login">Already have an account? Sign in</router-link>
         </div>
@@ -36,157 +59,57 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script>
 import axios from "axios";
+import {
+  ErrorMessage,
+  Field,
+  Form
+} from "vee-validate";
+import { signUpPageValidate } from "@/schema/validationSchema.js";
 import router from "@/router/index.js";
-import {ErrorMessage, Field, Form} from "vee-validate";
-import {loginPageValidate, signUpPageValidate} from "@/schema/validationSchema.js";
 
-const firstName = ref("");
-const email = ref("");
-const password = ref("");
-const errorMessage = ref("");
-
-const handleLogin = async () => {
-  try {
-    const response = await axios.post("http://localhost:3000/register", {
-      firstName: firstName.value,
-      email: email.value,
-      password: password.value,
-    });
-
-    alert(response.data.message);
-    if (response.data.redirectTo) {
-      await router.push(response.data.redirectTo);
-    } else {
-      await router.push('/login');
+export default {
+  components: {ErrorMessage, Field, Form},
+  computed: {
+    signUpPageValidate() {
+      return signUpPageValidate
     }
-  } catch (error) {
-    if (error.response) {
-      errorMessage.value = error.response.data.error || "Unknown error occurred";
-    } else {
-      errorMessage.value = "Something went wrong. Please try again later.";
+  },
+  data() {
+    return {
+      firstName: "",
+      email: "",
+      password: "",
+      errorMessage: ""
+    };
+  },
+  methods: {
+    async handleLogin(values, { setErrors }) {
+      try {
+        const response = await axios.post("http://localhost:3000/register", {
+          firstName: values.firstName,
+          email: values.email,
+          password: values.password
+        });
+
+        alert(response.data.message);
+        await router.push('/login');
+      } catch (error) {
+        if (error.response) {
+          this.errorMessage = error.response.data.error || "Unknown error occurred";
+          if (error.response.data.error === "This email is already registered") {
+            setErrors({ email: "This email is already registered" });
+          }
+        } else {
+          this.errorMessage = "Something went wrong. Please try again later.";
+        }
+      }
     }
   }
-};
-
-const forgotPassword = () => {
-  alert("Forgot password functionality coming soon!");
 };
 </script>
 
 <style scoped lang="scss">
-.login-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 0 20px;
 
-  .login-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 1000px;
-    width: 100%;
-    background-color: #fff;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-
-    @media (min-width: 768px) {
-      flex-direction: row;
-    }
-
-    .login-image {
-      flex: 1;
-      background-color: #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      margin-bottom: 20px;
-
-      img {
-        max-width: 180px;
-        height: auto;
-      }
-
-      @media (min-width: 768px) {
-        margin-bottom: 0;
-      }
-    }
-
-    .login-form {
-      flex: 1.5;
-      padding: 40px 60px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-
-      h1 {
-        font-size: 36px;
-        color: var(--black);
-        margin-bottom: 20px;
-        text-align: center;
-        font-family: var(--second-font),serif;
-      }
-
-      .form-group {
-        margin-bottom: 20px;
-
-        input {
-          width: 100%;
-          padding: 12px;
-          font-size: 15px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          transition: border-color 0.3s ease;
-
-          &:focus {
-            border-color: var(--main-color);
-            outline: none;
-          }
-        }
-      }
-
-      .login-button {
-        width: 100%;
-        background-color: var(--main-color);
-        color: var(--white);
-        border: none;
-        border-radius: 4px;
-        font-size: 20px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-          background-color: #333;
-        }
-      }
-
-      .error {
-        color: var(--main-color);
-        font-size: 15px;
-        margin-top: 10px;
-        text-align: center;
-      }
-
-      .extra-links {
-        margin-top: 20px;
-        text-align: center;
-
-        a, router-link {
-          color: var(--main-color);
-          text-decoration: none;
-          font-size: 15px;
-
-          &:hover {
-            text-decoration: underline;
-          }
-        }
-      }
-    }
-  }
-}
 </style>

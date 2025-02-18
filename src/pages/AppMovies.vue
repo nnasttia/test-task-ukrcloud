@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" @scroll="handleScroll">
     <h1>Popular Movies</h1>
 
     <div class="filters">
@@ -12,15 +12,7 @@
 
       <select v-model="selectedRating" @change="applyFilters">
         <option value="">All Ratings</option>
-        <option value="1">1+</option>
-        <option value="2">2+</option>
-        <option value="3">3+</option>
-        <option value="4">4+</option>
-        <option value="5">5+</option>
-        <option value="6">6+</option>
-        <option value="7">7+</option>
-        <option value="8">8+</option>
-        <option value="9">9+</option>
+        <option v-for="n in 9" :key="n" :value="n">{{ n }}+</option>
       </select>
 
       <div class="search-container">
@@ -34,9 +26,10 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="loading && movies.length === 0" class="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
-    <div class="movies-list" v-if="filteredMovies.length > 0">
+
+    <div class="movies-list" v-if="movies.length > 0">
       <MovieCard
           v-for="movie in filteredMovies"
           :key="movie.id"
@@ -44,79 +37,117 @@
           @movie-selected="goToMovieDetails"
       />
     </div>
-    <div v-else>No movies found</div>
+
+    <div v-if="loading" class="loading">Loading more movies...</div>
+    <div v-if="!loading && !hasMoreMovies" class="end-message">No more movies</div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, computed } from "vue";
+<script>
 import axios from "axios";
 import MovieCard from "@/components/MovieCard.vue";
 import router from "@/router/index.js";
 
-const movies = ref([]);
-const genres = ref([]);
-const searchQuery = ref("");
-const selectedGenre = ref("");
-const selectedRating = ref("");
-const loading = ref(true);
-const error = ref("");
+export default {
+  components: { MovieCard },
+  data() {
+    return {
+      movies: [],
+      genres: [],
+      searchQuery: "",
+      selectedGenre: "",
+      selectedRating: "",
+      page: 1,
+      loading: false,
+      error: "",
+      hasMoreMovies: true,
+    };
+  },
+  computed: {
+    filteredMovies() {
+      return this.movies.filter((movie) => {
+        const matchesSearch = movie.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesGenre = this.selectedGenre ? movie.genre_ids.includes(parseInt(this.selectedGenre)) : true;
+        const matchesRating = this.selectedRating ? movie.vote_average >= parseInt(this.selectedRating) : true;
+        return matchesSearch && matchesGenre && matchesRating;
+      });
+    },
+  },
+  methods: {
+    async fetchGenres() {
+      try {
+        const response = await axios.get("https://api.themoviedb.org/3/genre/movie/list", {
+          params: { api_key: "6259ebf1275fb543a9463547c1fffd76", language: "en-US" },
+        });
+        this.genres = response.data.genres;
+      } catch (err) {
+        this.error = err.response?.data?.status_message || "Failed to load genres";
+      }
+    },
 
-const fetchGenres = async () => {
-  try {
-    const response = await axios.get("https://api.themoviedb.org/3/genre/movie/list", {
-      params: {
-        api_key: "6259ebf1275fb543a9463547c1fffd76",
-        language: "en-US",
-      },
-    });
-    genres.value = response.data.genres;
-  } catch (err) {
-    error.value = err.response?.data?.status_message || "Failed to load genres";
-  }
+    async fetchMovies() {
+      if (this.loading || !this.hasMoreMovies) return;
+      this.loading = true;
+
+      try {
+        const url = this.searchQuery
+            ? "https://api.themoviedb.org/3/search/movie"
+            : "https://api.themoviedb.org/3/discover/movie";
+
+        const response = await axios.get(url, {
+          params: {
+            api_key: "6259ebf1275fb543a9463547c1fffd76",
+            query: this.searchQuery || undefined,
+            with_genres: this.searchQuery ? undefined : this.selectedGenre,
+            vote_average: this.searchQuery ? undefined : this.selectedRating,
+            language: "en-US",
+            page: this.page,
+          },
+        });
+
+        if (this.searchQuery) {
+          this.movies = response.data.results;
+        } else {
+          this.movies = [...this.movies, ...response.data.results];
+          this.page++;
+        }
+
+        this.hasMoreMovies = response.data.results.length > 0;
+      } catch (err) {
+        this.error = err.response?.data?.status_message || "Failed to load movies";
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    applyFilters() {
+      this.movies = [];
+      this.page = 1;
+      this.hasMoreMovies = true;
+      this.fetchMovies();
+    },
+
+    goToMovieDetails(id) {
+      router.push(`/movie/${id}`);
+    },
+
+    handleScroll() {
+      const bottomReached = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+      if (bottomReached) {
+        this.fetchMovies();
+      }
+    },
+  },
+  mounted() {
+    this.fetchGenres();
+    this.fetchMovies();
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.handleScroll);
+  },
 };
-
-const fetchMovies = async () => {
-  try {
-    const response = await axios.get("https://api.themoviedb.org/3/discover/movie", {
-      params: {
-        api_key: "6259ebf1275fb543a9463547c1fffd76",
-        with_genres: selectedGenre.value,
-        vote_average: selectedRating.value,
-        language: "en-US",
-      },
-    });
-    movies.value = response.data.results;
-  } catch (err) {
-    error.value = err.response?.data?.status_message || "Failed to load movies";
-  } finally {
-    loading.value = false;
-  }
-};
-
-const applyFilters = () => {
-  fetchMovies();
-};
-
-const filteredMovies = computed(() => {
-  return movies.value.filter(movie => {
-    const matchesSearchQuery = movie.title.toLowerCase().includes(searchQuery.value.toLowerCase());
-    const matchesGenre = selectedGenre.value ? movie.genre_ids.includes(parseInt(selectedGenre.value)) : true;
-    const matchesRating = selectedRating.value ? movie.vote_average >= parseInt(selectedRating.value) : true;
-    return matchesSearchQuery && matchesGenre && matchesRating;
-  });
-});
-
-const goToMovieDetails = (id) => {
-  router.push(`/movie/${id}`);
-};
-
-onMounted(() => {
-  fetchGenres();
-  fetchMovies();
-});
 </script>
-
 <style scoped>
 
 .filters {
@@ -211,12 +242,9 @@ onMounted(() => {
 
 div {
   margin-bottom: 30px;
+
   h1 {
-    text-align: center;
-    font-size: 2rem;
-    color: var(--white);
     margin-bottom: 20px;
-    font-family: var(--second-font),serif;
     padding-top: 30px;
   }
 
@@ -234,7 +262,6 @@ div {
     gap: 20px;
     padding: 20px;
     justify-items: center;
-
   }
 }
 </style>
